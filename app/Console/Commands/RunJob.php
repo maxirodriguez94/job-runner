@@ -63,30 +63,30 @@ class RunJob extends Command
                 Log::info("Trabajo completado correctamente: {$className}::{$methodName} (Intento {$attempt})");
                 $this->info("Trabajo ejecutado correctamente: {$className}::{$methodName}");
                 $success = true;
-                break; // Salir del bucle si el trabajo se ejecutó con éxito
+                break; 
             } catch (\Exception $e) {
-                // Actualizar estado del trabajo en caso de error
+                
                 $job->update([
                     'retries' => $attempt,
                     'error_message' => $e->getMessage(),
                 ]);
 
-                // Log de error
+                
                 Log::error("Error en intento {$attempt} para {$className}::{$methodName}: {$e->getMessage()}");
 
                 if ($attempt >= $retryAttempts) {
-                    // Actualizar estado a "failed" si se alcanzan todos los intentos
+                 
                     $job->update(['status' => 'failed']);
                     Log::error("Trabajo fallido después de {$retryAttempts} intentos: {$className}::{$methodName}");
                 } else {
-                    // Esperar antes del próximo intento
+                    
                     Log::info("Esperando 2 segundos antes del próximo intento...");
                     sleep(2);
                 }
             }
         }
 
-        // Log de finalización del trabajo
+        
         if (!$success) {
             Log::warning("El trabajo {$className}::{$methodName} no pudo completarse después de {$retryAttempts} intentos.");
         } else {
